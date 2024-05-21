@@ -69,7 +69,7 @@ function convert(req,res,next) {
             // '-profile:v high',
             // '-r 25',
             // '-crf 20',
-            // '-preset slow',
+            '-preset fast',
             // '-b:v 500k',
             // '-maxrate 500k',
             '-movflags +faststart',
