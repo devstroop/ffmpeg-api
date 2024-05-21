@@ -65,8 +65,8 @@ function convert(req,res,next) {
     if (conversion == "video")
     {
         ffmpegParams.outputOptions=[
-            '-codec:v libx264',
-            '-profile:v high',
+            '-c:v libx264',
+            // '-profile:v high',
             '-r 25',
             '-crf 20',
             // '-preset slow',
@@ -76,7 +76,7 @@ function convert(req,res,next) {
             // '-vf scale=-2:640',
             '-vf format=yuv420p',
             '-threads 8',
-            '-codec:a libfdk_aac',
+            '-c:a aac',
             '-b:a 160k',
         ];
 
