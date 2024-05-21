@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  ffmpeg-api:
+    image: devstroop/ffmpeg-api
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=debug
+      - FILE_SIZE_LIMIT_BYTES=536870912
+      - KEEP_ALL_FILES=false
+      - EXTERNAL_PORT=80
+    volumes:
+      - tmp_volume:/tmp
+    deploy:
+      mode: replicated
+      replicas: ${SERVICE_COUNT}
+      restart_policy:
+        condition: unless-stopped
+
+volumes:
+  tmp_volume:
