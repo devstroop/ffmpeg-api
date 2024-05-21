@@ -78,6 +78,12 @@ function convert(req,res,next) {
             '-codec:a libfdk_aac',
             '-b:a 128k',
         ];
+
+        let transpose = req.query.transpose || null;
+        if (transpose)
+        {
+            ffmpegParams.outputOptions.push(`-vf transpose=${transpose}`);
+        }
     }
 
     let savedFile = res.locals.savedFile;
