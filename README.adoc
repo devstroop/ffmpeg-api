@@ -17,6 +17,7 @@ FFMPEG API is provided as Docker image for easy consumption.
 * `POST /convert/audio/to/mp3` - Convert audio file in request body to mp3. Returns mp3-file.
 * `POST /convert/audio/to/wav` - Convert audio file in request body to wav. Returns wav-file.
 * `POST /convert/video/to/mp4` - Convert video file in request body to mp4. Returns mp4-file.
+** Query param: `transpose=1` - Changes Orientaton with conversion (optional)
 * `POST /convert/image/to/jpg` - Convert image file to jpg. Returns jpg-file.
 * `POST /video/extract/audio` - Extract audio track from POSTed video file. Returns audio track as 1-channel wav-file.
 ** Query param: `mono=no` - Returns audio track, all channels.
