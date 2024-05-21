@@ -72,8 +72,8 @@ function convert(req,res,next) {
             // '-preset slow',
             // '-b:v 500k',
             // '-maxrate 500k',
-            // '-bufsize 1000k',
-            // '-vf scale=-2:640',
+            '-movflags +faststart',
+            '-vf scale=-2:768', // is this line correct? 
             '-vf format=yuv420p',
             '-threads 8',
             '-c:a aac',
