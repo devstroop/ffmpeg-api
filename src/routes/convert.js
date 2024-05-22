@@ -66,14 +66,14 @@ function convert(req,res,next) {
     {
         ffmpegParams.outputOptions=[
             '-c:v libx264',
-            // '-profile:v high',
+            '-profile:v high',
             '-r 25',
             '-crf 20',
-            '-preset fast',
-            // '-b:v 500k',
-            // '-maxrate 500k',
+            '-preset medium',
+            '-b:v 500k',
+            '-maxrate 500k',
             '-movflags +faststart',
-            '-vf scale=-2:768', // is this line correct? 
+            '-vf scale=1366:-1',
             '-vf format=yuv420p',
             // '-threads 8',
             '-c:a aac',
