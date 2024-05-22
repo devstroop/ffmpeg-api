@@ -67,17 +67,17 @@ function convert(req,res,next) {
         ffmpegParams.outputOptions=[
             '-c:v libx264',
             // '-profile:v high',
-            // '-r 25',
-            // '-crf 20',
+            '-r 25',
+            '-crf 20',
             '-preset fast',
             // '-b:v 500k',
             // '-maxrate 500k',
             '-movflags +faststart',
-            // '-vf scale=-2:768', // is this line correct? 
-            // '-vf format=yuv420p',
+            '-vf scale=-2:768', // is this line correct? 
+            '-vf format=yuv420p',
             // '-threads 8',
-            // '-c:a aac',
-            // '-b:a 160k',
+            '-c:a aac',
+            '-b:a 160k',
         ];
 
         let transpose = req.query.transpose || null;
