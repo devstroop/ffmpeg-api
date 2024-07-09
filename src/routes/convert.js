@@ -7,64 +7,55 @@ const utils = require('../utils/utils.js')
 
 var router = express.Router()
 
-
 //routes for /convert
 //adds conversion type and format to res.locals. to be used in final post function
-router.post('/audio/to/mp3', function (req, res,next) {
-
-    res.locals.conversion="audio";
-    res.locals.format="mp3";
-    return convert(req,res,next);
+router.post('/audio/to/mp3', function (req, res, next) {
+    res.locals.conversion = "audio";
+    res.locals.format = "mp3";
+    return convert(req, res, next);
 });
 
-router.post('/audio/to/wav', function (req, res,next) {
-
-    res.locals.conversion="audio";
-    res.locals.format="wav";
-    return convert(req,res,next);
+router.post('/audio/to/wav', function (req, res, next) {
+    res.locals.conversion = "audio";
+    res.locals.format = "wav";
+    return convert(req, res, next);
 });
 
-router.post('/video/to/mp4', function (req, res,next) {
-
-    res.locals.conversion="video";
-    res.locals.format="mp4";
-    return convert(req,res,next);
+router.post('/video/to/mp4', function (req, res, next) {
+    res.locals.conversion = "video";
+    res.locals.format = "mp4";
+    return convert(req, res, next);
 });
 
-router.post('/image/to/jpg', function (req, res,next) {
-
-    res.locals.conversion="image";
-    res.locals.format="jpg";
-    return convert(req,res,next);
+router.post('/image/to/jpg', function (req, res, next) {
+    res.locals.conversion = "image";
+    res.locals.format = "jpg";
+    return convert(req, res, next);
 });
 
 // convert audio or video or image to mp3 or mp4 or jpg
-function convert(req,res,next) {
+function convert(req, res, next) {
     let format = res.locals.format;
     let conversion = res.locals.conversion;
     logger.debug(`path: ${req.path}, conversion: ${conversion}, format: ${format}`);
 
-    let ffmpegParams ={
+    let ffmpegParams = {
         extension: format
     };
-    if (conversion == "image")
-    {
-        ffmpegParams.outputOptions= ['-pix_fmt yuv422p'];
+
+    if (conversion == "image") {
+        ffmpegParams.outputOptions = ['-pix_fmt yuv422p'];
     }
-    if (conversion == "audio")
-    {
-        if (format === "mp3")
-        {
-            ffmpegParams.outputOptions=['-codec:a libmp3lame' ];
+    if (conversion == "audio") {
+        if (format === "mp3") {
+            ffmpegParams.outputOptions = ['-codec:a libmp3lame'];
         }
-        if (format === "wav")
-        {
-            ffmpegParams.outputOptions=['-codec:a pcm_s16le' ];
+        if (format === "wav") {
+            ffmpegParams.outputOptions = ['-codec:a pcm_s16le'];
         }
     }
-    if (conversion == "video")
-    {
-        ffmpegParams.outputOptions=[
+    if (conversion == "video") {
+        ffmpegParams.outputOptions = [
             '-c:v libx264',
             '-profile:v high',
             '-r 25',
@@ -81,8 +72,7 @@ function convert(req,res,next) {
         ];
 
         let transpose = req.query.transpose || null;
-        if (transpose)
-        {
+        if (transpose) {
             ffmpegParams.outputOptions.push(`-vf transpose=${transpose}`);
         }
     }
@@ -94,20 +84,146 @@ function convert(req,res,next) {
     //ffmpeg processing... converting file...
     let ffmpegConvertCommand = ffmpeg(savedFile);
     ffmpegConvertCommand
-            .renice(constants.defaultFFMPEGProcessPriority)
-            .outputOptions(ffmpegParams.outputOptions)
-            .on('error', function(err) {
-                logger.error(`${err}`);
-                utils.deleteFile(savedFile);
-                res.writeHead(500, {'Connection': 'close'});
-                res.end(JSON.stringify({error: `${err}`}));
-            })
-            .on('end', function() {
-                utils.deleteFile(savedFile);
-                return utils.downloadFile(outputFile,null,req,res,next);
-            })
-            .save(outputFile);
-        
+        .renice(constants.defaultFFMPEGProcessPriority)
+        .outputOptions(ffmpegParams.outputOptions)
+        .on('error', function (err) {
+            logger.error(`${err}`);
+            utils.deleteFile(savedFile);
+            res.writeHead(500, { 'Connection': 'close' });
+            res.end(JSON.stringify({ error: `${err}` }));
+        })
+        .on('end', function () {
+            // Probe the output file for metadata
+            ffmpeg(outputFile).ffprobe(function (err, metadata) {
+                if (err) {
+                    logger.error(`Error probing ${outputFile}: ${err}`);
+                    utils.deleteFile(outputFile);
+                    res.writeHead(500, { 'Connection': 'close' });
+                    res.end(JSON.stringify({ error: `${err}` }));
+                } else {
+                    // Set metadata in headers
+                    res.setHeader('X-Media-Metadata', JSON.stringify(metadata));
+                    utils.deleteFile(savedFile);
+                    return utils.downloadFile(outputFile, null, req, res, next);
+                }
+            });
+        })
+        .save(outputFile);
 }
 
 module.exports = router
+
+
+// var express = require('express')
+// const ffmpeg = require('fluent-ffmpeg');
+
+// const constants = require('../constants.js');
+// const logger = require('../utils/logger.js')
+// const utils = require('../utils/utils.js')
+
+// var router = express.Router()
+
+
+// //routes for /convert
+// //adds conversion type and format to res.locals. to be used in final post function
+// router.post('/audio/to/mp3', function (req, res,next) {
+
+//     res.locals.conversion="audio";
+//     res.locals.format="mp3";
+//     return convert(req,res,next);
+// });
+
+// router.post('/audio/to/wav', function (req, res,next) {
+
+//     res.locals.conversion="audio";
+//     res.locals.format="wav";
+//     return convert(req,res,next);
+// });
+
+// router.post('/video/to/mp4', function (req, res,next) {
+
+//     res.locals.conversion="video";
+//     res.locals.format="mp4";
+//     return convert(req,res,next);
+// });
+
+// router.post('/image/to/jpg', function (req, res,next) {
+
+//     res.locals.conversion="image";
+//     res.locals.format="jpg";
+//     return convert(req,res,next);
+// });
+
+// // convert audio or video or image to mp3 or mp4 or jpg
+// function convert(req,res,next) {
+//     let format = res.locals.format;
+//     let conversion = res.locals.conversion;
+//     logger.debug(`path: ${req.path}, conversion: ${conversion}, format: ${format}`);
+
+//     let ffmpegParams ={
+//         extension: format
+//     };
+//     if (conversion == "image")
+//     {
+//         ffmpegParams.outputOptions= ['-pix_fmt yuv422p'];
+//     }
+//     if (conversion == "audio")
+//     {
+//         if (format === "mp3")
+//         {
+//             ffmpegParams.outputOptions=['-codec:a libmp3lame' ];
+//         }
+//         if (format === "wav")
+//         {
+//             ffmpegParams.outputOptions=['-codec:a pcm_s16le' ];
+//         }
+//     }
+//     if (conversion == "video")
+//     {
+//         ffmpegParams.outputOptions=[
+//             '-c:v libx264',
+//             '-profile:v high',
+//             '-r 25',
+//             '-crf 20',
+//             '-preset fast',
+//             '-b:v 5000k',
+//             '-maxrate 5000k',
+//             '-movflags +faststart',
+//             '-vf scale=1366:-1',
+//             '-vf format=yuv420p',
+//             // '-threads 8',
+//             '-c:a aac',
+//             '-b:a 160k',
+//         ];
+
+//         let transpose = req.query.transpose || null;
+//         if (transpose)
+//         {
+//             ffmpegParams.outputOptions.push(`-vf transpose=${transpose}`);
+//         }
+//     }
+
+//     let savedFile = res.locals.savedFile;
+//     let outputFile = savedFile + '-output.' + ffmpegParams.extension;
+//     logger.debug(`begin conversion from ${savedFile} to ${outputFile}`)
+
+//     //ffmpeg processing... converting file...
+//     let ffmpegConvertCommand = ffmpeg(savedFile);
+//     ffmpegConvertCommand
+//             .renice(constants.defaultFFMPEGProcessPriority)
+//             .outputOptions(ffmpegParams.outputOptions)
+//             .on('error', function(err) {
+//                 logger.error(`${err}`);
+//                 utils.deleteFile(savedFile);
+//                 res.writeHead(500, {'Connection': 'close'});
+//                 res.end(JSON.stringify({error: `${err}`}));
+//             })
+//             .on('end', function() {
+//                 utils.deleteFile(savedFile);
+//                 return utils.downloadFile(outputFile,null,req,res,next);
+//             })
+//             .save(outputFile);
+        
+// }
+
+// module.exports = router
