@@ -17,7 +17,7 @@
 #####################################################################
 
 # Stage 1: Build
-FROM node:16-alpine as build
+FROM node:18.14-alpine3.16 as build
 
 RUN apk add --no-cache git
 
@@ -38,6 +38,8 @@ RUN npm install
 
 # Copy the rest of the application source code
 COPY ./src .
+# Create single binary file
+RUN pkg --targets node18-alpine-x64 /usr/src/app/package.json
 
 # Create a single binary file
 RUN pkg --targets node16-alpine-x64 /usr/src/app
